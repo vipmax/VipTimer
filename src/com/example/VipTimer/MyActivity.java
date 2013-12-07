@@ -30,46 +30,39 @@ public class MyActivity extends Activity implements View.OnClickListener {
 
     Timer myTimer;
     Button startButton;
-    TextView textViewTimer,textViewDate;
+    public  static TextView textViewTimer;
     int timeInSeconds = 00, timeInMinutes = 40;
-    Handler h;
+    public  static Handler h;
     static boolean activityFirstIsRunning = true;
+    MyTimer timer;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+
         startButton = (Button) findViewById(R.id.startButton);
         textViewTimer = (TextView) findViewById(R.id.textView);
         startButton.setOnClickListener(this);
-
         h = new Handler();
-
-
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.startButton:
-
                 if (startButton.getText().equals("Stop")) {
-                    showDialog(1);
-
-
-
+                    startButton.setText("Start");
+                    timer.stop();
                 }
                 else if (startButton.getText().equals("Start")) {
-                    showDialog(2);
-
-
-                }
-
+                        startButton.setText("Stop");
+                        timer = new MyTimer(0,40);
+                        timer.start();
+                     }
                 break;
-
         }
-
     }
 
     public void deleteTimer(Timer myTimer){
@@ -198,131 +191,6 @@ public class MyActivity extends Activity implements View.OnClickListener {
         activityFirstIsRunning = false;
     }
 
-    @Override
-    protected Dialog onCreateDialog(int id) {
-        if (id == 1) {
-            AlertDialog.Builder adb = new AlertDialog.Builder(this);
-            // заголовок
-            adb.setTitle("Выход");
-            // сообщение
-            adb.setMessage("Завершить тренировку?");
-            // иконка
-            adb.setIcon(android.R.drawable.ic_dialog_info);
-            // кнопка положительного ответа
-            adb.setPositiveButton("Да", exitCicklistener);
-            // кнопка отрицательного ответа
-            adb.setNegativeButton("Нет", exitCicklistener);
-
-
-            return adb.create();
-        }
-        if(id == 2){
-            AlertDialog.Builder adb = new AlertDialog.Builder(this);
-            // заголовок
-            adb.setTitle("Разминка");
-            // сообщение
-            adb.setMessage("Сделали разминку?");
-            // иконка
-            adb.setIcon(android.R.drawable.ic_dialog_info);
-            // кнопка положительного ответа
-            adb.setPositiveButton("Да", warmUpListener);
-            // кнопка отрицательного ответа
-            adb.setNegativeButton("Нет",warmUpListener );
-
-
-            return adb.create();
-        }
-        return super.onCreateDialog(id);
-    }
-
-    OnClickListener warmUpListener = new OnClickListener() {
-        @Override
-        public void onClick(DialogInterface dialogInterface, int i) {
-            switch (i){
-                case Dialog.BUTTON_POSITIVE:
-                     startTimer();
-                     break;
-                case Dialog.BUTTON_NEGATIVE:
-                    showWarmupToast();
-                    break;
-            }
-        }
-    };
-
-    OnClickListener exitCicklistener = new OnClickListener() {
-        public void onClick(DialogInterface dialog, int which) {
-            switch (which) {
-                // положительная кнопка
-                case Dialog.BUTTON_POSITIVE:
-                    startButton.setText("Start");
-                    deleteTimer(myTimer);
-
-                    break;
-                // негаитвная кнопка
-                case Dialog.BUTTON_NEGATIVE:
-
-                     break;
-
-            }
-        }
-    };
-
-
-    public void startTimer(){
-        puorOffInDataBase();
-        logDB();
-        Toast toast = Toast.makeText(getApplicationContext(), "Have a nice workout!", Toast.LENGTH_SHORT);
-        toast.show();
-        startButton.setText("Stop");
-        MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.comeon);
-        mediaPlayer.start();
-        mediaPlayer=null;
-        myTimer = new Timer();  //!!! The timer doesn't have any built-in methods for pausing. You can cancel the timer when you want to "pause" and make a new one when you want to "resume
-
-        myTimer.schedule(new TimerTask() {
-            public void run() {
-
-
-
-                h.post(new Runnable() {  // использую Handler, привязанный к UI-Thread
-                    @Override
-                    public void run() {
-                        timeInSeconds--;
-                        if (timeInSeconds < 0) {
-                            timeInMinutes--;
-                            timeInSeconds = 59;
-                        }
-
-                        if((timeInMinutes==35||timeInMinutes==30||timeInMinutes==25||timeInMinutes==20||timeInMinutes==15||timeInMinutes==10||timeInMinutes==5||timeInMinutes==4||timeInMinutes==3||timeInMinutes==2||timeInMinutes==1)&&timeInSeconds==1){
-                            MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.speedup);
-                            mediaPlayer.start();//
-                        }
-//
-                        if(timeInMinutes==-1 && timeInSeconds==59){
-                            deleteTimer(myTimer);
-                            h.post(new Runnable() {  // использую Handler, привязанный к UI-Thread
-                                @Override
-                                public void run() {
-                                    Toast toaster = Toast.makeText(getApplicationContext(), "Workout completed!", Toast.LENGTH_SHORT);
-                                    toaster.show();
-                                }
-                            });
-                        }
-
-
-                        textViewTimer.setText(String.valueOf(timeInMinutes) + ":" + String.format("%02d", timeInSeconds));
-                    }
-                });
-
-            }
-        }, 0, 1000);
-
-
-    }
-    public void showWarmupToast(){
-        Toast.makeText(this , "Делайте разминку как положено!", Toast.LENGTH_SHORT).show();
-
-    }
 
 }
 
