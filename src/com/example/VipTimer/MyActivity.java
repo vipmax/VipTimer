@@ -3,17 +3,15 @@ package com.example.VipTimer;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.CursorIndexOutOfBoundsException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,7 +19,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -64,53 +61,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
 
                 }
                 else if (startButton.getText().equals("Start")) {
-                    puorOffInDataBase();
-                    logDB();
-                    Toast toast = Toast.makeText(getApplicationContext(), "Have a nice workout!", Toast.LENGTH_SHORT);
-                    toast.show();
-                    startButton.setText("Stop");
-                    MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.comeon);
-                    mediaPlayer.start();
-                    mediaPlayer=null;
-                    myTimer = new Timer();  //!!! The timer doesn't have any built-in methods for pausing. You can cancel the timer when you want to "pause" and make a new one when you want to "resume
-
-                    myTimer.schedule(new TimerTask() {
-                        public void run() {
-
-
-
-                            h.post(new Runnable() {  // использую Handler, привязанный к UI-Thread
-                                @Override
-                                public void run() {
-                                    timeInSeconds--;
-                                    if (timeInSeconds < 0) {
-                                        timeInMinutes--;
-                                        timeInSeconds = 59;
-                                    }
-
-                                    if((timeInMinutes==35||timeInMinutes==30||timeInMinutes==25||timeInMinutes==20||timeInMinutes==15||timeInMinutes==10||timeInMinutes==5||timeInMinutes==4||timeInMinutes==3||timeInMinutes==2||timeInMinutes==1)&&timeInSeconds==1){
-                                        MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.speedup);
-                                        mediaPlayer.start();//
-                                    }
-//
-                                    if(timeInMinutes==-1 && timeInSeconds==59){
-                                        deleteTimer(myTimer);
-                                        h.post(new Runnable() {  // использую Handler, привязанный к UI-Thread
-                                            @Override
-                                            public void run() {
-                                                Toast toaster = Toast.makeText(getApplicationContext(), "Workout completed!", Toast.LENGTH_SHORT);
-                                                toaster.show();
-                                            }
-                                        });
-                                    }
-
-
-                                    textViewTimer.setText(String.valueOf(timeInMinutes) + ":" + String.format("%02d", timeInSeconds));
-                                }
-                            });
-
-                        }
-                    }, 0, 1000);
+                    showDialog(2);
 
 
                 }
@@ -149,7 +100,7 @@ public class MyActivity extends Activity implements View.OnClickListener {
         Date date = new Date(System.currentTimeMillis());
         String customerDate = (1900 + date.getYear()) + "-" + (1 + date.getMonth()) + "-" + date.getDate() + " " + String.format("%02d", date.getHours()) + ":" + String.format("%02d", date.getMinutes()) + ":" + String.format("%02d", date.getSeconds());
         cv.put("date",customerDate);
-        db.insert("myWorkoutDate", null,cv);
+        db.insert("myWorkoutDate", null, cv);
         dbhelper.close();
     }
 
@@ -258,9 +209,25 @@ public class MyActivity extends Activity implements View.OnClickListener {
             // иконка
             adb.setIcon(android.R.drawable.ic_dialog_info);
             // кнопка положительного ответа
-            adb.setPositiveButton("Да", myClickListener);
+            adb.setPositiveButton("Да", exitCicklistener);
             // кнопка отрицательного ответа
-            adb.setNegativeButton("Нет", myClickListener);
+            adb.setNegativeButton("Нет", exitCicklistener);
+
+
+            return adb.create();
+        }
+        if(id == 2){
+            AlertDialog.Builder adb = new AlertDialog.Builder(this);
+            // заголовок
+            adb.setTitle("Разминка");
+            // сообщение
+            adb.setMessage("Сделали разминку?");
+            // иконка
+            adb.setIcon(android.R.drawable.ic_dialog_info);
+            // кнопка положительного ответа
+            adb.setPositiveButton("Да", warmUpListener);
+            // кнопка отрицательного ответа
+            adb.setNegativeButton("Нет",warmUpListener );
 
 
             return adb.create();
@@ -268,7 +235,21 @@ public class MyActivity extends Activity implements View.OnClickListener {
         return super.onCreateDialog(id);
     }
 
-    OnClickListener myClickListener = new OnClickListener() {
+    OnClickListener warmUpListener = new OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+            switch (i){
+                case Dialog.BUTTON_POSITIVE:
+                     startTimer();
+                     break;
+                case Dialog.BUTTON_NEGATIVE:
+                    showWarmupToast();
+                    break;
+            }
+        }
+    };
+
+    OnClickListener exitCicklistener = new OnClickListener() {
         public void onClick(DialogInterface dialog, int which) {
             switch (which) {
                 // положительная кнопка
@@ -280,11 +261,68 @@ public class MyActivity extends Activity implements View.OnClickListener {
                 // негаитвная кнопка
                 case Dialog.BUTTON_NEGATIVE:
 
-                    break;
+                     break;
 
             }
         }
     };
+
+
+    public void startTimer(){
+        puorOffInDataBase();
+        logDB();
+        Toast toast = Toast.makeText(getApplicationContext(), "Have a nice workout!", Toast.LENGTH_SHORT);
+        toast.show();
+        startButton.setText("Stop");
+        MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.comeon);
+        mediaPlayer.start();
+        mediaPlayer=null;
+        myTimer = new Timer();  //!!! The timer doesn't have any built-in methods for pausing. You can cancel the timer when you want to "pause" and make a new one when you want to "resume
+
+        myTimer.schedule(new TimerTask() {
+            public void run() {
+
+
+
+                h.post(new Runnable() {  // использую Handler, привязанный к UI-Thread
+                    @Override
+                    public void run() {
+                        timeInSeconds--;
+                        if (timeInSeconds < 0) {
+                            timeInMinutes--;
+                            timeInSeconds = 59;
+                        }
+
+                        if((timeInMinutes==35||timeInMinutes==30||timeInMinutes==25||timeInMinutes==20||timeInMinutes==15||timeInMinutes==10||timeInMinutes==5||timeInMinutes==4||timeInMinutes==3||timeInMinutes==2||timeInMinutes==1)&&timeInSeconds==1){
+                            MediaPlayer mediaPlayer = MediaPlayer.create(getApplicationContext(), R.raw.speedup);
+                            mediaPlayer.start();//
+                        }
+//
+                        if(timeInMinutes==-1 && timeInSeconds==59){
+                            deleteTimer(myTimer);
+                            h.post(new Runnable() {  // использую Handler, привязанный к UI-Thread
+                                @Override
+                                public void run() {
+                                    Toast toaster = Toast.makeText(getApplicationContext(), "Workout completed!", Toast.LENGTH_SHORT);
+                                    toaster.show();
+                                }
+                            });
+                        }
+
+
+                        textViewTimer.setText(String.valueOf(timeInMinutes) + ":" + String.format("%02d", timeInSeconds));
+                    }
+                });
+
+            }
+        }, 0, 1000);
+
+
+    }
+    public void showWarmupToast(){
+        Toast.makeText(this , "Делайте разминку как положено!", Toast.LENGTH_SHORT).show();
+
+    }
 
 }
 
