@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android"
+        android:background="#FFFFFF" android:layout_gravity="center"
+        android:orientation="vertical">
+    <Button
+            android:layout_width="176dp"
+            android:layout_height="101dp"
+            android:text="Start"
+            android:id="@+id/startButton"
+            android:textColor="#1aa6ff"
+            android:textSize="30dp"
+            android:layout_centerHorizontal="true" android:layout_alignParentTop="true"
+            android:layout_marginTop="165dp"/>
+    <TextView
+            android:layout_width="69dp"
+            android:layout_height="73dp"
+            android:text="40:00"
+            android:id="@+id/textView"
+            android:textAlignment="textEnd" android:textColor="#009aff" android:textSize="50dp"
+            android:gravity="center_horizontal" android:layout_centerHorizontal="true"
+            android:layout_alignParentTop="true" android:layout_marginTop="29dp" android:layout_alignParentLeft="true"
+            android:layout_marginLeft="69dp" android:layout_alignRight="@+id/startButton"/>
+</RelativeLayout>
